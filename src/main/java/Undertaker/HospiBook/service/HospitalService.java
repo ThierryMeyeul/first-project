@@ -100,7 +100,7 @@ public class HospitalService {
 
             List<Speciality> specialities = this.specialityRepository.findByDeleted(false);
             AtomicReference<Speciality> speciality1;
-            speciality1 = new AtomicReference<>(new Speciality());
+            speciality1 = new AtomicReference<x(new Speciality());
             if (specialities != null) {
                 specialities.forEach(speciality2 -> {
                     if (Objects.equals(speciality2.getName(), speciality)){

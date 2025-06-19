@@ -20,28 +20,41 @@ public class NotificationController {
         this.notificationService = notificationService;
     }
 
-    @PostMapping()
-    public ResponseEntity<Notification> create(@RequestBody NotificationCreateDTO notificationCreateDTO){
-        return ResponseEntity.ok(this.notificationService.create(notificationCreateDTO));
+    @PostMapping
+    public ResponseEntity<Notification> createNotification(@RequestBody NotificationCreateDTO notification) {
+        return ResponseEntity.ok(notificationService.create(notification));
     }
 
-    @GetMapping()
-    public ResponseEntity<List<Notification>> read(){
-        return ResponseEntity.ok(this.notificationService.read());
+    @GetMapping("/user/{email}")
+    public ResponseEntity<List<Notification>> getUserNotifications(@PathVariable String email) {
+        return ResponseEntity.ok(notificationService.getUserNotification(email));
     }
 
-    @GetMapping(path = "{id}")
-    public ResponseEntity<Notification> readId(@PathVariable Long id){
-        return ResponseEntity.ok(this.notificationService.readId(id));
+    @GetMapping("/user/{email}/unread")
+    public ResponseEntity<List<Notification>> getUnreadNotifications(@PathVariable String email) {
+        return ResponseEntity.ok(notificationService.getUnreadNotifications(email));
     }
 
-    @PutMapping(path = "{id}")
-    public ResponseEntity<Notification> update(@PathVariable Long id, @RequestBody NotificationCreateDTO notificationCreateDTO){
-        return ResponseEntity.ok(this.notificationService.update(id, notificationCreateDTO));
+    @GetMapping("/user/{email}/unread-count")
+    public ResponseEntity<Long> getUnreadCount(@PathVariable String email) {
+        return ResponseEntity.ok(notificationService.getUnreadCount(email));
     }
 
-    @DeleteMapping(path = "{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id){
-        return ResponseEntity.ok(this.notificationService.delete(id));
+    @PutMapping("/{id}/mark-as-read")
+    public ResponseEntity<Void> markAsRead(@PathVariable Long id) {
+        notificationService.markAsRead(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/user/{email}/mark-all-as-read")
+    public ResponseEntity<Void> markAllAsRead(@PathVariable String email) {
+        notificationService.markAllAsRead(email);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
+        notificationService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

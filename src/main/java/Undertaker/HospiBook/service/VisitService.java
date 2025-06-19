@@ -65,7 +65,8 @@ public class VisitService {
         Invoice invoice = new Invoice(new Date(System.currentTimeMillis()));
         invoice.setVisitFree(visitFree);
         this.invoiceRepository.save(invoice);
-        Visit visit = new Visit(visitDTO.getReason(), visitDTO.getStartTime(), visitDTO.getEndTime(), visitDTO.getType(), patient, personnel, hospital.get(), visitFree, invoice);
+        Visit visit = new Visit(visitDTO.getReason(), visitDTO.getStartTime(), visitDTO.getEndTime(), visitDTO.getType(),
+                patient, personnel, hospital.get(), visitFree, invoice);
         return this. visitRepository.save(visit);
     }
 

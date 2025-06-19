@@ -103,15 +103,11 @@ public class UserService implements UserDetailsService {
     }
 
     public Patient registerPatient(PatientDTO patientDTO) {
-        if (this.userRepository.existsByEmail(patientDTO.getEmail())) {
-            throw new RuntimeException("Error : Email is already in use");
-        }
+        if (this.userRepository.existsByEmail(patientDTO.getEmail())) { throw new RuntimeException("Error : Email is already in use"); }
         patientDTO.setPassword(this.passwordEncoder.encode(patientDTO.getPassword()));
         if (patientDTO.getEmail().contains("@") && patientDTO.getEmail().contains(".")) {
             User user = new User(patientDTO.getPassword(), patientDTO.getUserName(), patientDTO.getEmail());
-
             Patient patient = new Patient(patientDTO.getFirstName(), patientDTO.getLastName(), patientDTO.getBirthDate(), patientDTO.getPhoneNumber(), patientDTO.getGender(), patientDTO.getCity(), patientDTO.getAddress(), patientDTO.getBloodTypeEnum(), patientDTO.getEmergencyContact(), patientDTO.getPatientStatusEnum());
-
             Set<Role> roles = new HashSet<>();
             Role role = this.roleRepository.findByName(UserRoleEnum.USER).orElseThrow(() -> new RuntimeException("Role not found"));
             roles.add(role);
@@ -285,7 +281,6 @@ public class UserService implements UserDetailsService {
         this.userRepository.save(user);
         return this.personRepository.findByUser(user);
     }
-
     public Person deleteRole(String email, UserRoleEnum role) {
         User user = this.userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
         Role role1 = this.roleRepository.findByName(role).orElseThrow(() -> new RuntimeException("role not found"));
@@ -302,6 +297,11 @@ public class UserService implements UserDetailsService {
         }
         user.setRoles(roles);
         this.userRepository.save(user);
+        return this.personRepository.findByUser(user);
+    }
+
+    public Person getProfile(String email) {
+        User user = this.userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
         return this.personRepository.findByUser(user);
     }
 }

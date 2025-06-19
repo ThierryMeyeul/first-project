@@ -72,7 +72,7 @@ public class User extends BaseEntity implements UserDetails {
         this.isActive = true;
     }
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "UsersRole", joinColumns = @JoinColumn(name = "userId"), inverseJoinColumns = @JoinColumn(name = "RoleId"))
     private Set<Role> roles;
 

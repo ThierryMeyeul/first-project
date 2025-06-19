@@ -49,62 +49,33 @@ public class UserController {
     @PostMapping("auth/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         try {
-            // Vérifier d'abord si l'utilisateur existe et est actif
             User user = this.userService.readEmail(request.email());
-
             if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new AuthResponse(null, null, null, "Email ou mot de passe incorrect", null));
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(null, null, null, "Email ou mot de passe incorrect", null));
             }
-
-            // Vérifier si le compte est bloqué (inactif)
             if (!user.isActive()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new AuthResponse(null, null, null, "Compte bloqué. Contactez l'administrateur.", null));
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(null, null, null, "Compte bloqué. Contactez l'administrateur.", null));
             }
-
-            // Si le compte est actif, procéder à l'authentification
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.email(), request.password())
-            );
-
-            // Réinitialiser les tentatives échouées après une connexion réussie
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.email(), request.password()));
             accountService.resetFailedAttempts(request.email());
-
             final String token = jwtUtil.generateToken(request.email());
             Person person = this.personRepository.findByUser(user);
-
             if (person instanceof Personnel) {
-                AuthResponse authResponse = new AuthResponse(
-                        user.getId(),
-                        user.getUserName(),
-                        user.getEmail(),
-                        token,
-                        ((Personnel) person).getHospital().getName()
-                );
+                AuthResponse authResponse = new AuthResponse(user.getId(), user.getUserName(), user.getEmail(), token, ((Personnel) person).getHospital().getName());
                 authResponse.setRoles(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()));
                 return ResponseEntity.ok(authResponse);
             } else {
-                AuthResponse authResponse = new AuthResponse(
-                        user.getId(),
-                        user.getUserName(),
-                        user.getEmail(),
-                        token,
-                        person.getHospitalName()
-                );
+                AuthResponse authResponse = new AuthResponse(user.getId(), user.getUserName(), user.getEmail(), token, person.getHospitalName());
                 authResponse.setRoles(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()));
                 return ResponseEntity.ok(authResponse);
             }
 
         } catch (AuthenticationException e) {
-            // Incrémenter le compteur de tentatives échouées en cas d'échec
             User user = userService.readEmail(request.email());
             if (user != null) {
                 accountService.incrementFailedAttemps(user);
             }
-
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new AuthResponse(null, null, null, "Email ou mot de passe incorrect", null));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(null, null, null, "Email ou mot de passe incorrect", null));
         }
     }
 
@@ -165,5 +136,11 @@ public class UserController {
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Person> deleteRole(@PathVariable String email, @RequestParam UserRoleEnum role) {
         return ResponseEntity.ok(this.userService.deleteRole(email, role));
+    }
+
+    @GetMapping(path = "profile/{email}")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<Person> getProfile(@PathVariable String email){
+        return ResponseEntity.ok(this.userService.getProfile(email));
     }
 }

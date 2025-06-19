@@ -32,21 +32,31 @@ public class PatientService {
         User user = this.userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
         Person person = this.personRepository.findByUser(user);
         if(!this.patientRepository.existsById(person.getId())){
-            Optional<Personnel> personnel = this.personnelRepository.findById(person.getId());
-
-            if(personnel.isEmpty()){
-                Set<Role> roles = new HashSet<>();
-                roles = person.getUser().getRoles();
-                Optional<Role> role = this.roleRepository.findByName(UserRoleEnum.USER);
-                roles.add(role.get());
-                user.setRoles(roles);
-                this.userRepository.save(user);
-                this.personRepository.delete(person);
-                entityManager.flush();
-            }
-            return null;
+            Set<Role> roles = new HashSet<>();
+            roles = person.getUser().getRoles();
+            Optional<Role> role = this.roleRepository.findByName(UserRoleEnum.USER);
+            roles.add(role.get());
+            user.setRoles(roles);
+            this.userRepository.save(user);
+            Patient patient = new Patient(person.getFirstName(), person.getLastName(), person.getBirthDate(), person.getPhoneNumber(), person.getGenderEnum(), person.getCity(), person.getAddress(), patientDTO.getBloodTypeEnum(), patientDTO.getEmergencyContact(), patientDTO.getPatientStatusEnum());
+            this.personRepository.delete(person);
+            entityManager.flush();
+            patient.setUser(user);
+            return this.patientRepository.save(patient);
+        } else {
+            Patient patient = this.patientRepository.findByUser(user).orElseThrow(() -> new RuntimeException("Patient not found"));
+            patient.setStatus(patientDTO.getPatientStatusEnum());
+            patient.setCity(patientDTO.getCity());
+            patient.setEmergencyContact(patientDTO.getEmergencyContact());
+            patient.setBloodType(patientDTO.getBloodTypeEnum());
+            patient.setPhoneNumber(patientDTO.getPhoneNumber());
+            patient.setGender(patientDTO.getGender());
+            patient.setLastName(patientDTO.getLastName());
+            patient.setFirstName(patientDTO.getFirstName());
+            patient.setBirthDate(patientDTO.getBirthDate());
+            patient.setAddress(patientDTO.getAddress());
+            return this.patientRepository.save(patient);
         }
-        return null;
     }
 
     /*public String create(Long id, PatientDTO patientDTO){
